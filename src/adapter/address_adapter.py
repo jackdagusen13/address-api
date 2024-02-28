@@ -1,7 +1,13 @@
 from sqlalchemy.orm import Session, sessionmaker
 
 from src.domain.ports.address import AddressMutation, UserMutation
-from src.domain.dto import AddressDto, UserDto, CreateAddressDto, UpdateAddressDto
+from src.domain.dto import (
+    AddressDto,
+    UserDto,
+    CreateAddressDto,
+    UpdateAddressDto,
+    PerimeterDto,
+)
 from src.domain.model import Address, User
 from src.domain.exceptions import RowNotFound
 from src.adapter.schema import UserRow, AddressRow
@@ -27,7 +33,6 @@ class AddressAdapter(AddressMutation, UserMutation):
         data = user.model_dump()
 
         data["id"] = str(uuid4())
-        print(data)
         statement = insert(UserRow).values(data)
 
         self.session.execute(statement)
@@ -80,7 +85,7 @@ class AddressAdapter(AddressMutation, UserMutation):
 
         return Address(**row.dict())
 
-    def update_address(self, address_id: str, address: UpdateAddressDto) -> Address:
+    def update_address(self, address: UpdateAddressDto) -> Address:
         query = (
             update(AddressRow)
             .where(AddressRow.id == address.id)
@@ -104,3 +109,26 @@ class AddressAdapter(AddressMutation, UserMutation):
             self.session.execute(query)
         except NoResultFound:
             raise RowNotFound("No address found")
+
+    def get_all_addresses_within_perimeter(
+        self, perimeter: PerimeterDto
+    ) -> list[Address]:
+        try:
+            rows = self.session.query(AddressRow).where(
+                AddressRow.latitude <= perimeter.max_latitude,
+                AddressRow.latitude >= perimeter.min_latitude,
+                AddressRow.longitude <= perimeter.max_longitude,
+                AddressRow.longitude >= perimeter.min_longitude,
+            )
+        except NoResultFound:
+            return []
+
+        return [Address(**row.dict()) for row in rows]
+
+    def get_all_addresses(self) -> list[Address]:
+        try:
+            rows = self.session.query(AddressRow).all()
+        except NoResultFound:
+            return []
+
+        return [Address(**row.dict()) for row in rows]

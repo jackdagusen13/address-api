@@ -5,6 +5,7 @@ from src.domain.request import (
     UserResponse,
     UpdateAddressRequest,
     AddressResponse,
+    PerimeterRequest,
     UpdateAddressRequestBody,
 )
 
@@ -89,3 +90,22 @@ async def delete_address(
     return JSONResponse(
         status_code=202, content={"message": "Delete request successfully"}
     )
+
+
+@app.post(
+    "/addresses",
+    response_model=list[AddressResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def get_addresses_within_perimeter(
+    request: PerimeterRequest,
+) -> list[AddressResponse]:
+    ports = Ports()
+
+    addresses = service.get_addresses_within_kilometers(ports, request)
+
+    response = [
+        AddressResponse.model_validate(address.model_dump()) for address in addresses
+    ]
+
+    return response
