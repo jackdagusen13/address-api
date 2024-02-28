@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, sessionmaker
 
 from src.domain.ports.address import AddressMutation, UserMutation
-from src.domain.dto import AddressDto, UserDto
+from src.domain.dto import AddressDto, UserDto, CreateAddressDto, UpdateAddressDto
 from src.domain.model import Address, User
 from src.domain.exceptions import RowNotFound
 from src.adapter.schema import UserRow, AddressRow
@@ -10,7 +10,7 @@ from sqlalchemy import select, insert, update, delete
 from src.adapter.schema import engine
 from uuid import uuid4
 from sqlalchemy.orm.exc import NoResultFound
-
+from decimal import Decimal
 
 Session = sessionmaker(bind=engine)
 
@@ -34,7 +34,7 @@ class AddressAdapter(AddressMutation, UserMutation):
 
         return User(**data)
 
-    def create_address(self, address: AddressDto) -> Address:
+    def create_address(self, address: CreateAddressDto) -> Address:
         data = address.model_dump()
 
         data["id"] = str(uuid4())
@@ -62,7 +62,6 @@ class AddressAdapter(AddressMutation, UserMutation):
                 UserRow.id == user_id,
             )
         )
-        x = self.session.query(AddressRow).all()
         try:
             row = self.session.scalars(query).one()
         except NoResultFound:
@@ -74,7 +73,6 @@ class AddressAdapter(AddressMutation, UserMutation):
         query = select(AddressRow).where(
             AddressRow.id == id,
         )
-        x = self.session.query(AddressRow).all()
         try:
             row = self.session.scalars(query).one()
         except NoResultFound:
@@ -82,16 +80,14 @@ class AddressAdapter(AddressMutation, UserMutation):
 
         return Address(**row.dict())
 
-    def update_address(
-        self, address_id: str, new_name: str, new_longitude: str, new_latitude: str
-    ) -> Address:
+    def update_address(self, address_id: str, address: UpdateAddressDto) -> Address:
         query = (
             update(AddressRow)
-            .where(AddressRow.id == address_id)
+            .where(AddressRow.id == address.id)
             .values(
-                name=new_name,
-                longitude=new_longitude,
-                latitude=new_latitude,
+                name=address.name,
+                longitude=address.longitude,
+                latitude=address.latitude,
             )
             .returning(AddressRow)
         )

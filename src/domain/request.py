@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional
-
+from decimal import Decimal
 
 class AddressRequest(BaseModel):
     name: str
@@ -8,8 +8,8 @@ class AddressRequest(BaseModel):
 
 class AddressResponse(AddressRequest):
     id: str
-    longitude: str
-    latitude: str
+    longitude: Decimal
+    latitude: Decimal
 
 
 class UserRequest(BaseModel):

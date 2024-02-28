@@ -1,7 +1,8 @@
 from typing import Protocol, Optional, Generator
-from src.domain.dto import AddressDto, UserDto
+from src.domain.dto import AddressDto, UserDto, UpdateAddressDto, CreateAddressDto
 from src.domain.model import Address, User
 import contextlib
+from decimal import Decimal
 
 
 class UserQuery(Protocol):
@@ -23,12 +24,10 @@ class AddressQuery(Protocol):
 
 
 class AddressMutation(AddressQuery, Protocol):
-    def create_address(self, address: AddressDto) -> Address:
+    def create_address(self, address: CreateAddressDto) -> Address:
         """Create an address"""
 
-    def update_address(
-        self, address_id: str, new_name: str, new_longitude: str, new_latitude: str
-    ) -> Address:
+    def update_address(self, address_id: str, address: UpdateAddressDto) -> Address:
         """Update an address"""
 
     def delete_address(self, address_id: str) -> None:

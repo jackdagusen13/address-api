@@ -6,6 +6,7 @@ from sqlalchemy import (
     MetaData,
     ForeignKey,
     inspect,
+    Numeric,
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import uuid
@@ -28,8 +29,8 @@ class AddressRow(Base):
     __tablename__ = "address"
     id = Column(Text, primary_key=True)
     name = Column(Text, nullable=False)
-    longitude = Column(Text, nullable=True)
-    latitude = Column(Text, nullable=True)
+    longitude = Column(Numeric, nullable=True)
+    latitude = Column(Numeric, nullable=True)
     user_id = Column(
         String,
         ForeignKey(
@@ -58,9 +59,3 @@ def get_session_maker() -> sessionmaker:
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
-
-    user = UserRow(id="1", name="Jack")
-
-    with get_session_maker().begin() as session:
-        session.add(user)
-        session.commit()
