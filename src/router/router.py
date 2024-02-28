@@ -77,7 +77,7 @@ async def update_address(
 @app.delete(
     "/address/{address_id}",
     response_model=Optional[AddressResponse],
-    status_code=status.HTTP_202_ACCEPTED
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def delete_address(
     address_id: Annotated[str, Path],
@@ -86,5 +86,6 @@ async def delete_address(
 
     address = service.delete_address(ports, address_id)
 
-    return JSONResponse(status_code=202, content={"message": "Delete request successfully"})
-
+    return JSONResponse(
+        status_code=202, content={"message": "Delete request successfully"}
+    )

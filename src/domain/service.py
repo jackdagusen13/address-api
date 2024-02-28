@@ -11,7 +11,8 @@ from .request import (
 from src.domain.dto import AddressDto, UserDto
 import geocoder
 
-def get_user_by_id(ports: Ports, id:str) -> User:
+
+def get_user_by_id(ports: Ports, id: str) -> User:
     with ports.store() as store:
         user = store.user.get_user(id)
         try:
@@ -38,7 +39,7 @@ def create_user(ports: Ports, request: UserRequest) -> User:
             name=address_request.name,
             longitude=longitude,
             latitude=latitude,
-            user_id=user.id
+            user_id=user.id,
         )
 
         user.address = store.address.create_address(address_dto)
@@ -46,7 +47,7 @@ def create_user(ports: Ports, request: UserRequest) -> User:
     return user
 
 
-def _get_coordinates(value: str) -> tuple[str,str]:
+def _get_coordinates(value: str) -> tuple[str, str]:
     coordinates = geocoder.osm(value)
     if not coordinates.osm:
         raise AddressNotFound("Unable to locate address name")

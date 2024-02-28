@@ -4,7 +4,7 @@ from typing import Optional
 
 class Address(BaseModel):
     id: str
-    name:str
+    name: str
     longitude: str
     latitude: str
 

@@ -102,9 +102,7 @@ class AddressAdapter(AddressMutation, UserMutation):
 
         return Address(**row.dict())
 
-    def delete_address(
-        self, address_id: str
-    ) -> None:
+    def delete_address(self, address_id: str) -> None:
         try:
             query = delete(AddressRow).where(AddressRow.id == address_id)
             self.session.execute(query)

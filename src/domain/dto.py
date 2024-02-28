@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
+
 class AddressDto(BaseModel):
     name: str
     longitude: str
@@ -10,5 +11,3 @@ class AddressDto(BaseModel):
 
 class UserDto(BaseModel):
     name: str
-
-

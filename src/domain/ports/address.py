@@ -31,9 +31,7 @@ class AddressMutation(AddressQuery, Protocol):
     ) -> Address:
         """Update an address"""
 
-    def delete_address(
-        self, address_id: str
-    ) -> None:
+    def delete_address(self, address_id: str) -> None:
         """delete an address"""
 
 
