@@ -1,7 +1,13 @@
 from sqlalchemy.orm import Session, sessionmaker
 
 from src.domain.ports.address import AddressMutation, UserMutation
-from src.domain.dto import AddressDto, UserDto
+from src.domain.dto import (
+    AddressDto,
+    UserDto,
+    CreateAddressDto,
+    UpdateAddressDto,
+    PerimeterDto,
+)
 from src.domain.model import Address, User
 from src.domain.exceptions import RowNotFound
 from src.adapter.schema import UserRow, AddressRow
@@ -10,7 +16,7 @@ from sqlalchemy import select, insert, update, delete
 from src.adapter.schema import engine
 from uuid import uuid4
 from sqlalchemy.orm.exc import NoResultFound
-
+from decimal import Decimal
 
 Session = sessionmaker(bind=engine)
 
@@ -27,14 +33,13 @@ class AddressAdapter(AddressMutation, UserMutation):
         data = user.model_dump()
 
         data["id"] = str(uuid4())
-        print(data)
         statement = insert(UserRow).values(data)
 
         self.session.execute(statement)
 
         return User(**data)
 
-    def create_address(self, address: AddressDto) -> Address:
+    def create_address(self, address: CreateAddressDto) -> Address:
         data = address.model_dump()
 
         data["id"] = str(uuid4())
@@ -62,7 +67,6 @@ class AddressAdapter(AddressMutation, UserMutation):
                 UserRow.id == user_id,
             )
         )
-        x = self.session.query(AddressRow).all()
         try:
             row = self.session.scalars(query).one()
         except NoResultFound:
@@ -74,7 +78,6 @@ class AddressAdapter(AddressMutation, UserMutation):
         query = select(AddressRow).where(
             AddressRow.id == id,
         )
-        x = self.session.query(AddressRow).all()
         try:
             row = self.session.scalars(query).one()
         except NoResultFound:
@@ -82,16 +85,14 @@ class AddressAdapter(AddressMutation, UserMutation):
 
         return Address(**row.dict())
 
-    def update_address(
-        self, address_id: str, new_name: str, new_longitude: str, new_latitude: str
-    ) -> Address:
+    def update_address(self, address: UpdateAddressDto) -> Address:
         query = (
             update(AddressRow)
-            .where(AddressRow.id == address_id)
+            .where(AddressRow.id == address.id)
             .values(
-                name=new_name,
-                longitude=new_longitude,
-                latitude=new_latitude,
+                name=address.name,
+                longitude=address.longitude,
+                latitude=address.latitude,
             )
             .returning(AddressRow)
         )
@@ -108,3 +109,26 @@ class AddressAdapter(AddressMutation, UserMutation):
             self.session.execute(query)
         except NoResultFound:
             raise RowNotFound("No address found")
+
+    def get_all_addresses_within_perimeter(
+        self, perimeter: PerimeterDto
+    ) -> list[Address]:
+        try:
+            rows = self.session.query(AddressRow).where(
+                AddressRow.latitude <= perimeter.max_latitude,
+                AddressRow.latitude >= perimeter.min_latitude,
+                AddressRow.longitude <= perimeter.max_longitude,
+                AddressRow.longitude >= perimeter.min_longitude,
+            )
+        except NoResultFound:
+            return []
+
+        return [Address(**row.dict()) for row in rows]
+
+    def get_all_addresses(self) -> list[Address]:
+        try:
+            rows = self.session.query(AddressRow).all()
+        except NoResultFound:
+            return []
+
+        return [Address(**row.dict()) for row in rows]
