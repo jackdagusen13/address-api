@@ -1,16 +1,16 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from typing import Optional
 from decimal import Decimal
 
 
 class AddressRequest(BaseModel):
-    name: str
+    name: str = Field(default="Manila City Call")
 
 
 class PerimeterRequest(BaseModel):
-    latitude: Decimal
-    longitude: Decimal
-    distance: Decimal
+    latitude: Decimal = Field(description="measurement of location north or south", default=Decimal("14.5995"))
+    longitude: Decimal = Field(description="measurement of location east or west", default=Decimal("120.9842"))
+    distance: Decimal = Field(description="the perimeter of the address to search in km")
 
     @field_validator("longitude")
     def validate_longitude(cls, value: Decimal) -> Decimal:
@@ -34,7 +34,7 @@ class AddressResponse(AddressRequest):
 
 
 class UserRequest(BaseModel):
-    name: str
+    name: str = Field(default="foo bar")
     address: Optional[AddressRequest] = None
 
     @field_validator("name")

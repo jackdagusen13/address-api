@@ -96,6 +96,7 @@ async def delete_address(
     "/addresses",
     response_model=list[AddressResponse],
     status_code=status.HTTP_200_OK,
+    description="Get the available addresses based on the coordinates given within the given distance perimeter in km"
 )
 async def get_addresses_within_perimeter(
     request: PerimeterRequest,
