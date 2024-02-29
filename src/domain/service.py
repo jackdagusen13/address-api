@@ -116,32 +116,37 @@ def get_addresses_within_perimeter(
     return addresses
 
 
-def get_addresses_within_kilometers(
-    ports: Ports, request: PerimeterRequest
-) -> list[Address]:
+def get_users_within_kilometers(ports: Ports, request: PerimeterRequest) -> list[User]:
     with ports.store() as store:
-        addresses: list[Address] = store.address.get_all_addresses()
+        users: list[User] = store.address.get_all_users()
 
-    addresses_within_distance = _filter_within_distance(
-        addresses=addresses, request=request
-    )
+    users_within_distance = _filter_within_distance(users=users, request=request)
 
-    return addresses_within_distance
+    return users_within_distance
 
 
 def _filter_within_distance(
-    addresses: list[Address], request: PerimeterRequest
+    users: list[User], request: PerimeterRequest
 ) -> list[Address]:
     coordinate = (request.latitude, request.longitude)
 
-    new_addresses = []
-    for address in addresses:
-        existing_coordinate = (address.latitude, address.longitude)
-        distance_from_coordinate = distance.distance(
-            coordinate, existing_coordinate
-        ).kilometers
-        within_distance = request.distance >= distance_from_coordinate
-        if within_distance:
-            new_addresses.append(address)
+    filtered_users = []
+    for user in users:
+        address = user.address
 
-    return new_addresses
+        if _if_within_distance(request.distance, coordinate, user.address):
+            filtered_users.append(user)
+
+    return filtered_users
+
+
+def _if_within_distance(
+    max_distance: Decimal, reference: tuple[Decimal, Decimal], address: Address
+) -> bool:
+    existing_coordinate = (address.latitude, address.longitude)
+
+    distance_from_reference = distance.distance(
+        reference, existing_coordinate
+    ).kilometers
+
+    return max_distance >= distance_from_reference

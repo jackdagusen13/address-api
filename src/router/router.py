@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, status, HTTPException, Request
+from fastapi import Depends, FastAPI, Path, status, HTTPException, Request, Query
 
 from src.domain.request import (
     UserRequest,
@@ -92,21 +92,19 @@ async def delete_address(
     )
 
 
-@app.post(
-    "/addresses",
-    response_model=list[AddressResponse],
+@app.get(
+    "/users",
+    response_model=list[UserResponse],
     status_code=status.HTTP_200_OK,
-    description="Get the available addresses based on the coordinates given within the given distance perimeter in km"
+    description="Get the available users based on the coordinates given within the given distance perimeter in km",
 )
-async def get_addresses_within_perimeter(
-    request: PerimeterRequest,
+async def get_users_within_kilometers(
+    request: PerimeterRequest = Depends(),
 ) -> list[AddressResponse]:
     ports = Ports()
 
-    addresses = service.get_addresses_within_kilometers(ports, request)
+    users = service.get_users_within_kilometers(ports, request)
 
-    response = [
-        AddressResponse.model_validate(address.model_dump()) for address in addresses
-    ]
+    response = [UserResponse.model_validate(user.model_dump()) for user in users]
 
     return response

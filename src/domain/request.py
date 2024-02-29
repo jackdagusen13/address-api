@@ -1,6 +1,7 @@
 from pydantic import BaseModel, field_validator, Field
 from typing import Optional
 from decimal import Decimal
+from fastapi import Depends, FastAPI, Query
 
 
 class AddressRequest(BaseModel):
@@ -8,9 +9,19 @@ class AddressRequest(BaseModel):
 
 
 class PerimeterRequest(BaseModel):
-    latitude: Decimal = Field(description="measurement of location north or south", default=Decimal("14.5995"))
-    longitude: Decimal = Field(description="measurement of location east or west", default=Decimal("120.9842"))
-    distance: Decimal = Field(description="the perimeter of the address to search in km")
+    latitude: Decimal = Query(
+        required=True,
+        description="measurement of location north or south",
+        default=Decimal("14.5995"),
+    )
+    longitude: Decimal = Query(
+        required=True,
+        description="measurement of location east or west",
+        default=Decimal("120.9842"),
+    )
+    distance: Decimal = Query(
+        gt=0, required=True, description="the perimeter of the address to search in km"
+    )
 
     @field_validator("longitude")
     def validate_longitude(cls, value: Decimal) -> Decimal:

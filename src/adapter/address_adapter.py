@@ -125,10 +125,20 @@ class AddressAdapter(AddressMutation, UserMutation):
 
         return [Address(**row.dict()) for row in rows]
 
-    def get_all_addresses(self) -> list[Address]:
+    def get_all_users(self) -> list[User]:
         try:
-            rows = self.session.query(AddressRow).all()
+            rows: list[tuple[UserRow, AddressRow]] = (
+                self.session.query(UserRow, AddressRow).join(AddressRow).all()
+            )
         except NoResultFound:
             return []
 
-        return [Address(**row.dict()) for row in rows]
+        users = []
+        for user_row, address_row in rows:
+            user = User(**user_row.dict())
+
+            user.address = Address(**address_row.dict()) if address_row else None
+
+            users.append(user)
+
+        return users

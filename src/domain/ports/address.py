@@ -33,8 +33,8 @@ class AddressQuery(Protocol):
     ) -> list[Address]:
         """Get address within a perimeter in longitude/latitude"""
 
-    def get_all_addresses(self) -> list[Address]:
-        """Get all addresses"""
+    def get_all_users(self) -> list[User]:
+        """Get all users"""
 
 
 class AddressMutation(AddressQuery, Protocol):
